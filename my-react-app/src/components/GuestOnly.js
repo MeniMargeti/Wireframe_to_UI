@@ -1,0 +1,12 @@
+import { Navigate, useLocation } from "react-router-dom";
+
+import { jwt } from "../utils/index.js";
+
+const GuestOnly = ({ c }) => {
+	const location = useLocation();
+	return jwt.isAuthenticated()
+		? <Navigate to="/home" state={{ from: location }} />
+		: c;
+};
+
+export default GuestOnly;

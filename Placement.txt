@@ -1,0 +1,28 @@
+Placement:
+- The given wireframe it's 1080p and it has to be separated in 12 equally spaced columns for the correct placement of the components in the grid
+- Your job is to divide the wireframe into 12 columns with the same width (so numbers above 12 are forbidden for the columns) and place the components correctly. 
+- If the start or the end of the component doesn't align with another one then  they could not have the same number in the start_column or the end_column
+- You should be extra careful with the distance each component have from the right end of the wireframe
+- Determine the grid placement (start_column, end_column, start_row, end_row) of each component by scanning the layout from left to right and top to bottom using the absoluteBoundingBox(x, y, width and height) properties from the message that contains the JSON.
+- For your convenience start scanning the image from left to right (for the columns), with the component with the smaller x. Then:
+1. Detect the first component (by the JSON the component with the smaller x)
+2.1. Continue the searching of the 2nd component. By consulting the JSON code if {x1  + width1} > {x2} then the start_column2 < end_column1 
+2.2 else if it's true that {x1 + width1} < {x2} then start_column2 > end_column1
+3.1. Detect where the 2nd component end, if by consulting the json code it's true that {x1 + width1 } > {x2 + width2 } then end_column2 < end_column1
+3.2. else if it's true that {x1 + width1} < {x2 + width2 } then end_column2 > end_column1
+4. Do the same for every component
+- Now I want the same thing for the rows too
+1. Detect the first component (by the JSON the component with the smaller y)
+2.1. Continue the searching of the 2nd component. By consulting the JSON code if {y1  + height1} > {y2} then the start_row2 < end_row1 
+2.2 else if it's true that {y1 + height1} < {y2} then start_row2 > end_row1
+3.1. Detect where the 2nd component end, if by consulting the json code it's true that {y1 + height1 } > {y2 + height2 } then end_row2 < end_row1
+3.2. else if it's true that {y1 + height1} < {y2 + height2 } then end_row2 > end_row1
+4. Do the sma efor every component
+- Make sure that the shapes of the components remain the same as in the picture 
+for example if in the picture the component has square  shape (width approximately equals height in the JSON) then the {end_column-start_column} = {end_row-start_row} for example "columns" : "2/6", "rows" :"5/9"
+- Now for the rows make sure that the spacing is right from the top/bottom of the screen 
+- Then I want you to write down only the json file of the  components all together and nothing else. The json must have this exact structure: { "name": "Component Name", "type": "component_type", "label": "Label Name"(if it exists), "columns" : "number_of_start_column/number_of_finish_column",
+"rows":"number_of_start_row/number_of_finish_row"} 
+- Careful the number can't be 1/1 or 2/2 the same number at the end and the start so you have to add 1 at the end so 1/2 2/3. 
+- I want the component name to be either 1 word or if its more, divided with "_" without any space
+Your response should have ONLY the json code as it was described above NOTHING else.

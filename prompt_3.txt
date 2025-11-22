@@ -1,0 +1,88 @@
+You are the best AI web developer and your job is to analyze the given from figma wireframe (picture) and code (JSON) and identify the components that the wireframe is consisted of. I will give you the JSON, the Wireframe in a png and the rules you must follow in any case
+- You should work the image and the given JSON parallel. Don't forget to double check with the JSON code, if you are adding an item (like lines or any shapes) by the image processing
+- When the pictured item is a square/rectangle with an "X" drawn through it diagonally from corner to corner, then the component's type is Image 
+- In some cases you can see in the image shapes that dont entail a component but are just the content of an image. So you must check in the JSON if it apears any image that you mistook as a different component
+- If the pictured item is represented by lines (or a single line), the component type is Text.
+- When the lines are consecutive, so there is a block of lines (if they start in the same width of the screen),then there is ONE and only component type of Text
+- If the first (top) line is centered as the lines below then the first line is a diferrent component from the block of lines below. So the wireframe contains one title component (type text) of the component type Text below (2 different components)
+- If the wireframe has more than 2 consecutive parallel and equal in size lines then it is a block of lines, so one component type text. Be careful the lines MUST all start in the same x of the wireframe and all of them have to end in the same x exept from the last line witch can end and earlier, without this meaning that it is a different component 
+- For the rectangles you should search in the image if there are any lines/shapes inside the rectangles
+- When the pictured item is a rectangle with a horizontal line inside (in the center), then its a type Button component
+- The only component that has a horizontal line inside its the Button be very careful it's neither a text or input
+- If there is a line inside a small rectangle then the type of the component isn't Text but Button 
+- When the pictured item is an oblong rectangle without anything inside, then the component is a type Input component
+    - If the oblong rectangle has a word inside (in the left) then its type is Input and it has a label. So you must add in the JSON code the property "label" with value the written word 
+- ONLY If the oblong rectangle is empty (there is no line or text inside the rectangle), then the input is without label
+- If the pictured rectangle has a triangle (polygon for the JSON) inside, then the type of the component is Dropdown
+- When the picture item is a small empty square or a small square that contains a tick (√) then the component is type Checkbox 
+- If in the wireframe appears a big rectangle (like a Box) that includes some of the illustrations which describe the components that are referred above, then the component's type is Card and the children of the component are the components, that are inside the outline rectangle.
+- If the pictured item in the wireframe is a big Box with crossed lines inside (like a grid) then the type of the component is Table
+- Then I want you to write down only the JSON file of the components all together and nothing else. The JSON must have this exact structure: 
+{ 
+    "name": "Component Name", 
+    "type": "component_type", 
+    "label": "Label Name"(if it exists), 
+    "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+    }} 
+- The JSON for the Dropdown only must have this stracture
+    { 
+    "name": "Component Name", 
+    "type": "component_type", 
+    "label": "Label Name"(if it exists),
+    "items":"[options]",
+    "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+    }} 
+    where options have this stracture {name:'option 1',value:'1'},{name:'option 2',value:'2'} if there are no options then its "items":"[]"
+- The JSON for the Card only must have this stracture
+{
+    "name": "Component Name", 
+    "type": "Card", 
+    "label": "Label Name"//(if it exists),
+    "children":[
+        { 
+        "name": "Component_1 Name ", 
+        "type": "component_1_type", 
+        "label": "Label Name"//(if it exists),
+        "absoluteBoundingBox":{
+            "x": "x",
+            "y": "y",
+            "width":" w",
+            "height": "h"
+            }},
+        { 
+        "name": "Component_2 Name", 
+        "type": "component_2_type", 
+        "label": "Label Name"//(if it exists),
+        "absoluteBoundingBox":{
+            "x": "x",
+            "y": "y",
+            "width":" w",
+            "height": "h"
+            }}
+                ]
+        }
+- The JSON for the Table only must have this stracture
+    { 
+    "name": "Component Name", 
+    "type": "Table", 
+    "label": "Label Name"(if it exists),
+    "data":"[]",
+    "columns":number_of_the_table's_columns,
+    "absoluteBoundingBox":{
+        "x": "x",
+        "y": "y",
+        "width":" w",
+        "height": "h"
+    }} 
+- I want the component name to be either 1 word or if its more, devided with "_" without any space
+- Don't forget to add the external [] for the json 
+- For the names of the components try not to add any assumptions for their function. Keep as simple as possible
+Your response should have ONLY the JSON code as it was described above NOTHING else.
