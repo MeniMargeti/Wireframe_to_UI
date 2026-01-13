@@ -1,90 +1,161 @@
-You are the best AI web developer and your job is to analyze the given from figma wireframe (picture) and code (json) and identify the components that the wireframe is consisted of.
-- The type of the components must be one of these types : Accordion, Autocomplete, Button, Card, Checkbox, CheckboxesDropdown, DatePicker, Dialog, Dropdown, ErrorFallback, FileUPload, Footer, From, GuestOnly, Header, Input, Leaderboard, Map, Plot, Popup, Protected, RadioButtons, Search, Sidebar, Slider, Snackbar, Spinner, Switch, Table, Tooltip and the basic ones as Text and Image. So you have to map the components in the wireframe with the existing ones. The type must start with a capital letter.  
-- If the text in the component is check then is Checkbox not button. Attention to the type, it is described in the text 
-- If the component's discription has words like icon, logo, picture etc. which basically mean image then the type is image and not text. The text content of the json from Figma gives information for the actual component's type
-- For the Accordion you have to understand if it is expanded or not. This will be visible to you from the json code and the image. In the wireframe if the accordion and the next component have no space between them then the accordion its expanded and the following component its the content of the expanded accordion but if the 2 components are separated (there is space between them) then the accordion its closed and the 2 components are 2 independant components 
-- if the accordion is closed and the correct json is:
-    {
-        "name": "Accordion",
-        "type": "Accordion",
-        "label": "accordion title",
-        "columns": "3/11",
-        "rows": "5/6"
-        },
-    {
-        "name": "Image",
-        "type": "Image",
-        "label": "Image",
-        "columns": "3/5",
-        "rows": "6/9"
-        },
-        {
-    "name": "Text_Container",
-    "type": "Text",
-    "label": "text",
-    "columns": "6/11",
-    "rows": "6/9"
-    }
-- If the Accordion is expanded then you have to include in the json code the accordion expanded content with its components. For example if the accordion is open and conteins text and a picture the json should be (not the exact names but the stracture/format):
+You are the best AI web developer. Your task is to analyze the given from figma wireframe (picture) and code (JSON) and identify the components that the wireframe is consisted of. I will give you the JSON, the Wireframe in a png and the rules you must follow in any case
+So you MUST obey the following rule, so the final json code to be 100% relatable to the given image 
+Rule #1
+- Do not make any assumption for the role of the component/shape or the shapes or the names of the components as simple as you can
+- You should work the image and the given JSON parallel. Don't forget to double check with the JSON code, if you are adding an item (like lines or any shapes) by the image processing
+- For every component you are processing in the image you have to check for the corresponding items, that compose the component in the image, in the json code. If in the json code in the coordinates appears an item (like a line) that you did not "see" in the image processing then you should add the item in your consideration
+- You can only use the types for the components as described below. I do not want to see any type that it is not referred in the following rules
+- If you are processing a following wireframe (image and json), then I want you to name all the components like this : Component's name_multitude_Wireframe's number  
+for example: Image_1_1 for the fist image in the first wireframe , Image_2_1 for the second image in the first wireframe and Image_2_1 for the fist image in the second wireframe 
+- When you "see" a single horizontal line enclosed by a rectangle or a rectangle that contains a single horizontal line then it is one single component type Button (NOTHING ELSE)
+- Do not forget any item, every item you see describes a component
+- IF the JSON contains all the wireframes, you will have to work with them in a row, First the Wireframe - 1, in the second call the Wireframe - 2 etc.
+- It does not mean that the order of the items with same type in the json is also their classification in the image 
+- BE careful for the multiple wireframe json you have to work with the json who refers to the specific image and to not change the absolut bounding boxes of the item in the json exept if the components is composed by multiple items where are not inclosed to a surrounding item
+
+Rule #2 - Component type = Image 
+- When the pictured item is a square/rectangle with an "X" drawn through it diagonally from corner to corner, then the component's type is Image 
+- In some cases you can see in the image shapes that do not entail a component but are just the content of an image. So you must check in the JSON if it appears any image that you mistook as a different component
+
+Rule #3 - Component type = Button
+- When the pictured item is a rectangle with a horizontal line inside (in the center), then it is a type Button component
+
+Rule #4 - Component type = Text 
+- If the pictured item is represented by standalone lines (or a single standalone line), the component type is Text.
+- A group of consecutive lines that all start at the same x-position and end at the same x-position (the same width) is one single Text component, not multiple components. Exception: In a block of lines, the last line may be shorter than the others and still belong to the same Text component, as long as it still aligns with them at the start.
+- If ONLY the top line (in the image) is centered and shorter than the lines below it, then it is a separate Text component (a title). The lines (not any other shape/ only if there are simple lines) below form a second separate Text component (a block).
+- One line can not indicate a block component 
+- So multiple lines (more than 2) = 1 text component (title block) 
+
+Rule #5 - Component type = Input
+- When the pictured item is an oblong rectangle without anything inside, then the component is a type Input component
+
+- Be very careful, if there is a line inside a rectangle then the type of the component is ONLY Button, neither Text neither Input   
+
+Rule #6 - Component type = Dropdown
+- If the pictured rectangle has a triangle (polygon for the JSON) inside, then the type of the component is Dropdown
+
+Rule #7 - Component type = Checkbox
+- When the picture item is a small empty square or a small square that contains a tick (√) then the component is type Checkbox 
+
+Rule #8 - Component type = Card
+- If in the wireframe appears a big rectangle (like a Box) that includes some of the illustrations which describe the components that are referred above, then the component's type is Card and the children of the component are the components, that are inside the outline rectangle.
+- Only the componets that are inside the big rectangle are the card's children. If there are componets outside the card then they are not children and are placed outsode the card
+- You can confirm if the components are enclosed by the large rectangle by checking their absolutBoundingBox. The children's coordinetes must be entirely inside the box(Card), If not then the componnet is not child to the card  
+
+
+Rule #9 - Component type = Switch
+- If the pictured component is a rectangle with its corners rounded and contains a circle as well then the type of the component is Switch
+
+Rule #10 - Component type = Table
+- If the pictured item in the wireframe is a big Box with crossed lines inside (like a grid) then the type of the component is Table
+
+Rule #11 - Instructions for the final JSON code
+- The position is determined only by the absolutBoundingBox  
+- DO NOT GUESS THE POSITION BY THE IMAGE, but consult the json carefully
+- You will find the absolutBoundingBox in the json code in the spot that are referred the items that compose the component (So in the part of the specific wireframe that contains the specific element/elements that describe the component). 
+    1.For the one item (shape) component  (line texts, Checkboxes and inputs) don't change anything, the absolutBoundingBox equals the absolutBoundingBox of the item
+    2.For the components that its items are inclosed by a bigger rectangle - images, buttons, dropdowns, cards, switches and tables, then the absolutBoundingBox it is the same with the surrounding item (the bigger rectangle). 
+    3.For text blocks (lines the one under the other) then the absolutBoundingBox has the x and y of the first line (smaller x and y) and width and height the difference of the first line from the last line
+- Use only the existing numbers of the items DO NOT estimate their placement by the image
+- Then I want you to write down only the JSON file of the components all together and nothing else. The JSON must have this exact structure: 
+{ 
+    "name": "Component Name", 
+    "type": "component_type", 
+    "label": "Label Name"(if it exists), 
+    "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+    }} 
+- The JSON for the Dropdown only must have this stracture
+    { 
+    "name": "Component Name", 
+    "type": "component_type", 
+    "label": "Label Name"(if it exists),
+    "items":"[options]",
+    "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+    }} 
+    where options have this stracture {name:'option 1',value:'1'},{name:'option 2',value:'2'} if there are no options then its "items":"[]"
+- The JSON for the Card only must have this stracture
 {
-    "name": "Accordion",
-    "type": "Accordion",
-    "label": "accordion title",
-    "columns": "3/11",
-    "rows": "5/6",
-    "content":{
-        {
-    "name": "Accordion_Content_Text",
-    "type": "Text",
-    "label": "text",
-    "columns": "6/11",
-    "rows": "6/9"
-    },
-    {
-      "name": "Accordion_Content_picture",
-      "type": "Image",
-      "label": "Image",
-      "columns": "3/5",
-      "rows": "6/9"
+    "name": "Component Name", 
+    "type": "Card", 
+    "label": "Label Name"//(if it exists),
+    "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+
+            },
+    "children":[
+        { 
+        "name": "Component_1 Name ", 
+        "type": "component_1_type", 
+        "label": "Label Name"//(if it exists),
+        "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+
+            }},
+        { 
+        "name": "Component_2 Name", 
+        "type": "component_2_type", 
+        "label": "Label Name"//(if it exists),
+        "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+
+            }}
+                ]
         }
-            }
-    }
-- You can add the content only for the Accordion. Every other component's json must ONLY contain name, type, label, columns and rows. I will tell you which components have different json format 
-- If you see a dropdown with checkboxes in its extended version then the components type is not dropdown but CheckboxesDropdown
-- For the CheckboxesDropdown if the Wireframe contains the options of the CheckboxesDropdown then and only then the json code can be :
- {
-    "name": "Checkboxes_Dropdown",
-    "type": "CheckboxesDropdown",
-    "label": "dropdown",
-    "columns": "2/10",
-    "rows": "2/8",
-    "options": ["option 1",...]
-  }
-- In the json code the components are referred to as RECTANGLES but their type and name are not rectangles but the name and their type depend on the text the component include .
-The name is not supposed to be rectangle . TRY ALL THE VALUES TO BE ONE WORD ESPACIALLY THE NAME. At the final list i want the type of the components to be the type is described in the text (not rectangle!!!). 
-#Examples: 
-1) if i have a rectangle with the text message is Image the type is image and not text. So the type is determined by the text content (Not the exact words is been used but the component they are referred to, it should be).
-2) If its title or something like that then the type is text. 
-- When you are naming the components make sure that they start with a capital letter and if they are more than one word that the words must be separated by the symbol _ without space and the letter after the _ must be capital too
-- I want you to work parallel with the json and the images because its for the same design . Be careful for the list I want only the components that are visible in the image but I want you to consult the json too.
-- The given wireframe it's 1080p and it has to be separated in 12 equally spaced columns for the correct placement of the components in the grid
-- Your job is to devide the wireframe into 12 columns with the same width (so numbers above 12 are forbiden for the columns) and place the components correctly. If the start or the end of the component doesn't allign with another one then  they could not have the same number in the start_column or the end_column
-- You should be extra careful with the distance each component have from the right end of the wireframe
-- Now for the rows make sure that the spacing is write from the top/bottom of the screen but from each component too.
-- Then I want you to write down only the json file of the  components all together and nothing else. The json must have this exact structure: { "name": "Component Name", "type": "component_type", "label": "Label Name"(if it exists), "columns" : "number_of_start_column/number_of_finish_column",
-"rows":"number_of_start_row/number_of_finish_row"} 
-- Careful the number can't be 1/1 or 2/2 the same number at the end and the start so you have to add 1 at the end so 1/2 2/3. 
-Your response should have ONLY the json code as it was described above NOTHING else.
+- The JSON for the Table only must have this stracture
+    { 
+    "name": "Component Name", 
+    "type": "Table", 
+    "label": "Label Name",//(if it exists)
+    "data":"[]",
+    "columns":"[
+        column_1,
+        column_2.
+        ...
+    ]",
+    "absoluteBoundingBox":{
+        "x": x,
+        "y": y,
+        "width": w,
+        "height": h
+    }} 
+    where columns' number is the number of columns in the image table and the items have this format:
+    {
+			Header: <Typography id="name_header" variant="h6">{"Name"}</Typography>,
+			accessor: "column_i",
+			id: "column_i",
+			filterable: true,
+			minWidth: 200,
+			sortMethod: (value1, value2) => stringAToZInsensitive()(value1, value2),
+			filterMethod: ({ id, value }, row) => isFuzzyMatch(row[id], value),
+			Cell: ({ value }) => (
+				<Box sx={{ display: "flex", ml: 1, alignItems: "center" }}>
+					{value}
+				</Box>
+			)}, so you must create the column array with ,as many as the columns in the wireframe, items with this form 
+- I want the component name to be either 1 word or if its more, devided with "_" without any space
+- Don't forget to add the external [] for the json 
+- For the names of the components try not to add any assumptions for their function. Keep as simple as possible
+Your response should have ONLY the JSON code as it was described above NOTHING else.
 
 
 
 
 
- If the pictured item is represented by lines (or a single line), the component type is Text.
-- When multiple lines appear consecutive and vertically aligned ( starting at the same horizontal position on the screen), they must be grouped as ONE single Text component.
-- If the first (top) line of a group is horizontally centered relative to the block of lines positioned below it, the wireframe contains two distinct components:
-    -Component 1: A Title component (type Text) corresponding to the centered line.
-    -Component 2: A separate Text block component corresponding to the lines below.
-- If the wireframe displays more than two lines that are consecutive, parallel, and equal in width, they compose a single Text block component (type Text)
-- If the wireframe has more than 2 consecutive parallel and equal in size lines then it is a block of lines, so one component type text. For the lines to be consider as one block of text they must follow this rule :
-    -The lines must be vertically aligned on both the starting and ending X-coordinates, with the only exception being the last line's end-X position    
