@@ -1,116 +1,232 @@
-I want you find the accuracy of these 10 json codes than contain the json for the coponents that compose the same wireframe , their similarity. 
-Hint: the name of the component it hasn't to be the same with the other ones but the type has to 
-For the placement you should be more indulgent than the type
-If the size of the component its the same (example: 2 columns and 1 row ) for every code then its not that wrong as if it were a different size (example: 2 columns and 2 rows for the same components as the example before)
-For your response i want you to answer the total accuracy in a percentage 
-1)
-```json
-[
-  {
-    "name": "Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/8"
-  }
-]
-```
-2)
-```json
-[
-  {
-    "name": "Main Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/8"
-  }
-]
-```
-3)
-```json
-[
-  {
-    "name": "Main Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/7"
-  }
-]
-```
-4)
-```json
-[
-  {
-    "name": "Image",
-    "type": "Image",
-    "columns": "4/8",
-    "rows": "3/7"
-  }
-]
-```
-5)
-```json
-[
-  {
-    "name": "Image",
-    "type": "Image",
-    "columns": "2/5",
-    "rows": "3/7"
-  }
-]
-```
-6)
-```json
-[
-  {
-    "name": "Main Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/7"
-  }
-]
-```
-7)
-```json
-[
-  {
-    "name": "Main Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/7"
-  }
-]
-```
-8)
-```json
-[
-  {
-    "name": "Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/8"
-  }
-]
-```
-9)
-```json
-[
-  {
-    "name": "Main Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/7"
-  }
-]
-```
-10)
-```json
-[
-  {
-    "name": "Main Image",
-    "type": "Image",
-    "columns": "3/7",
-    "rows": "3/7"
-  }
-]
-```
+You are the best AI web developer. Your task is to analyze the given from figma wireframe (picture) and identify the components that the wireframe is consisted of. I will give you the Wireframe in a png and the rules you must follow in any case
+So you MUST obey the following rule, so the final json code to be 100% relatable to the given image 
+
+For the given project here is a siple description of it:
+{{Project description}}
+
+And for the given wireframe here is a simple description:
+{{Wireframe description}}
+
+Rule #1
+- You can only use the types for the components as described below. I do not want to see any type that it is not referred in the following rules
+- When you "see" a single horizontal line enclosed by a rectangle or a rectangle that contains a single horizontal line then it is one single component type Button (NOTHING ELSE)
+- Do not forget any item, every item you see describes a component
+- If you are processing a following wireframe (different wireframe from the previous one), then I want you to name all the components like this : Component's name_multitude_Wireframe's number  
+for example: Image_1_1 for the fist image in the first wireframe , Image_2_1 for the second image in the first wireframe and Image_2_1 for the fist image in the second wireframe
+
+Rule #2 - Component type = Image 
+- When the pictured item is a square/rectangle with an "X" drawn through it diagonally from corner to corner, then the component's type is Image 
+- Then i want you to search an image that fits in the description both for the wireframe and the whole project and write url in the json, be care ful the url must exist (search the correct one that fits )
+- You can crop the image to fit in the space that covers the image like this in the url:
+  "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d/w_400,h_400,c_fill/sample.jpg" this is the cropped version w_400,h_400,c_fill where 400 means the pixel of the width of the image etc.
+
+Rule #3 - Component type = ..._Button (2 types of buttons: Border_Button and Backround_Button)
+- When the pictured item is a rectangle with a horizontal line inside (in the center), then it is a type Button component
+- It does not matter if the rectangle is oblong. If it has a line inside, then it is only type Button
+- If the rectangle is full black with a white line inside, then it is a Backround_Button
+- And if there is white rectangle with black line inside, then it is a Border_Button
+
+Rule #4 - Component type = Text 
+- If the pictured item is represented by standalone lines (or a single standalone line), the component type is Text.
+- A group of consecutive lines that all start at the same x-position and end at the same x-position (the same width) is one single Text component, not multiple components. Exception: In a block of lines, the last line may be shorter than the others and still belong to the same Text component, as long as it still aligns with them at the start.
+- If ONLY the top line (in the image) is centered and shorter than the lines below it, then it is a separate Text component (a title). The lines (not any other shape/ only if there are simple lines) below form a second separate Text component (a block).
+- One line can not indicate a block component 
+- So multiple lines (more than 2) = 1 text component (title block) 
+- For the text i want you to fill the total space of the text component or the write the title with dummy text, that is corresponding with the wireframe's and project's description. You will add the data to a new prop in the json called "content"
+
+Rule #5 - Component type = Input
+- When the pictured item is an oblong rectangle without anything inside, then the component is a type Input component
+- Be very careful, if there is a line inside a rectangle then the type of the component is ONLY Button, neither Text neither Input   
+- You can add a label of the input according to the description of the wireframe and the project 
+
+Rule #6 - Component type = Dropdown
+- If the pictured rectangle has a triangle inside, then the type of the component is Dropdown
+- You can fill the dropdown's items with options relevant to the descriptions and name the label corresponding to the usage of the dropdown
+
+Rule #7 - Component type = Checkbox
+- When the picture item is a small empty square or a small square that contains a tick (√) then the component is type Checkbox 
+
+Rule #8 - Component type = Card
+- If in the wireframe appears a big rectangle (like a Box) that includes some of the illustrations which describe the components that are referred above, then the component's type is Card and the children of the component are the components, that are inside the outline rectangle.
+- It is possible for the wireframe to represent a card within a card
+
+Rule #9 - Component type = Switch
+- If the pictured component is a rectangle with its corners rounded and contains a circle as well then the type of the component is Switch
+
+Rule #10 - Component type = Table
+- If the pictured item in the wireframe is a big Box with crossed lines inside (like a grid) then the type of the component is Table
+- You can add data to the table relevant to the descriptions 
+
+Rule #11 - Placement
+CRITICAL FOUNDATION - READ FIRST:
+- THE GRID IS ALWAYS EXACTLY 12 COLUMNS (defined by 13 vertical lines)
+- THE GRID IS ALWAYS EXACTLY 15 ROWS (defined by 16 horizontal lines)
+- THESE NUMBERS NEVER CHANGE REGARDLESS OF WHAT YOU SEE IN THE IMAGE
+
+Grid Definition:
+- Wireframe dimensions: 1920x1080 px
+- Column width: 160px each (1920 ÷ 12 = 160)
+- Column lines: Line 1 (x=0), Line 2 (x=160), Line 3 (x=320), ..., Line 13 (x=1920)
+- Row lines: Line 1 (y=0), Line 2 (y=72), Line 3 (y=144), ..., Line 16 (y=1080)
+
+FORBIDDEN:
+- Never use column line > 13
+- Never use row line > 16
+- Never calculate total columns by counting components
+- Never use decimal numbers. Only integers are available
+
+Component Placement Rules:
+1. MARGINS:
+   - If left margin exists (no component starts at x=0), then the components have to start from column-Line 2 or higher
+   - If right margin exists (no component ends at x=1920), then the components have to end at column-Line 12 or lower
+   - If top margin exists (no component starts at y=0), then the components have to start from row-Line 2 or higher
+   - If bottom margin exists (no component starts at y=1080), then the components have to end at row-Line 15 or lower
+   - If there is NO margin on a side, then the components can touch column-Line 1/13 (columns) or row-Line 1/16 (rows)
+
+2. GAPS BETWEEN COMPONENTS:
+   - Gaps are NOT columns
+   - Gaps are the space between where one component ends and another begins
+   - Example: Card 1 ends at Line 4, Card 2 starts at Line 5 = 1 column gap (Line 4 to Line 5)
+
+3. ALIGNMENT:
+   - Aligned components must share the same start/end column or row values
+   - Centered components should be centered within the 12-column grid
+
+4. CARD INTERNAL GRIDS:
+   - Each Card component has its OWN internal grid (13 column lines × 11 row lines)
+   - Children positions are relative to the Card's internal grid, NOT the main wireframe grid
+   - Report children with their internal grid positions
+   - It is possible the wireframe to represent a card within a card
+
+- I want you to place the components so that is visibly as possible as close in the given image (double check it with your final outcome)
+
+At the end of the procedure you must check if some component has been placed in a line bigger that 13 (lines >13 are forbidden), and if some has then you must correct all the componets so there is no component placed in a forbidden range
+
+COMMON MISTAKES TO AVOID:
+- ❌ NEVER calculate total columns by multiplying (number of items × columns per item)
+- ❌ NEVER create more than 13 vertical lines
+- ✓ ALWAYS start with the fixed grid (13 lines, 12 columns)
+- ✓ ALWAYS place components WITHIN this fixed grid
+
+Rule #12 - Instructions for the final JSON code
+- Then I want you to write down only the JSON file of the components all together and nothing else. The JSON must have this exact structure: 
+{ 
+    "name": "Component Name", 
+    "type": "component_type", 
+    "label": "Label Name"(if it exists), 
+    "placement":{
+      "columns": start_column/end_column
+      "rows": start_row/end_row
+    }}
+- For the image components :
+  { 
+    "name": "Component Name", 
+    "type": "Image", 
+    "url":"the url",
+    "placement":{
+      "columns": start_column/end_column
+      "rows": start_row/end_row
+    }} 
+- The JSON for the Dropdown only must have this structure
+    { 
+    "name": "Component Name", 
+    "type": "component_type", 
+    "label": "Label Name"(if it exists),
+    "items":"[options]",
+    "placement":{
+      "columns": start_column/end_column
+      "rows": start_row/end_row
+    }} 
+    where options have this structure {text:'option 1',value:'1'},{text:'option 2',value:'2'} if there are no options then its "items":"[]"
+- The JSON for the Card only must have this structure
+{
+    "name": "Component Name", 
+    "type": "Card", 
+    "label": "Label Name"//(if it exists),
+    "placement":{
+      "columns": start_column/end_column
+      "rows": start_row/end_row
+    },
+    "children":[
+        { 
+        "name": "Component_1 Name ", 
+        "type": "component_1_type", 
+        "label": "Label Name"//(if it exists),
+        "placement":{
+          "columns": start_column/end_column
+          "rows": start_row/end_row
+    }},
+        { 
+        "name": "Component_2 Name", 
+        "type": "component_2_type", 
+        "label": "Label Name"//(if it exists),
+        "placement":{
+          "columns": start_column/end_column
+          "rows": start_row/end_row
+        }}
+                ]
+        }
+- The JSON for the Table only must have this structure
+    { 
+    "name": "Component Name", 
+    "type": "Table", 
+    "label": "Label Name",//(if it exists)
+    "data":"[]",//add the "" only outside the []
+    "columns":"[]",//add the "" only outside the []
+    "placement":{
+          "columns": start_column/end_column
+          "rows": start_row/end_row
+    }}  ,where columns have this structure and must have as many objects as the number of columns of the pictured table:
+    "[{
+			Header: <Typography id="name_header" variant="h6">{"Name"}</Typography>,
+			accessor: "name",
+			id: "name",
+			filterable: true,
+			minWidth: 200,
+			sortMethod: (value1, value2) => stringAToZInsensitive()(value1, value2),
+			filterMethod: ({ id, value }, row) => isFuzzyMatch(row[id], value),
+			Cell: ({ value }) => (
+				<Box sx={{ display: "flex", ml: 1, alignItems: "center" }}>
+					{value}
+				</Box>
+			)},
+      ,
+		{
+			Header: <Typography variant="h6">{"Status"}</Typography>,
+			accessor: "status",
+			id: "status",
+			filterable: true,
+			minWidth: 250,
+			maxWidth: 380,
+			style: { overflow: "visible" },
+			sortMethod: (value1, value2) => stringAToZInsensitive()(value1, value2),
+			filterMethod: ({ id, value }, row) => isFuzzyMatch(row[id], value),
+			Cell: ({ value }) => (
+				<Box sx={{ display: "flex", ml: 1, alignItems: "center", justifyContent: "center" }}>
+					<Typography color={value.toLowerCase() === "active" ? "success.main" : (value.toLowerCase() === "inactive" ? "error.main" : "black")}>{value}</Typography>
+				</Box>
+			),...
+		}]" do not add "" to the keys
+    and data this structure:
+    "[
+	{
+		id: "test",
+		name: "Test",
+		status: "active",
+		createdAt: new Date(),
+	},
+	{
+		id: "test2",
+		name: "Test2",
+		status: "inactive",
+		createdAt: new Date(),
+	}]" do not add "" to the keys add only the "" to the array 
+- I want the component name to be either 1 word or if its more, devided with "_" without any space
+- Don't forget to add the external [] for the json 
+- For the names of the components try not to add any assumptions for their function. Keep as simple as possible
+Your response should have ONLY the JSON code as it was described above NOTHING else.
+
+
+
+
 
