@@ -4,21 +4,25 @@ import os
 import requests
 from dotenv import load_dotenv
 load_dotenv('codes.env')
+from UI_code import render_component, render_grid_placement
 # image=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\wireframe_6\Frame.png"
 # json_code=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\wireframe_6\wireframe.json"
-json_code=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\Table\wireframe.json"
-image=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\Table\Frame.png"
-dsl_code_path=r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\dsl_code.dsl"
+# json_code=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\wireframe.json"
+image=[r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_1.png",
+       r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_2.png",
+       r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_3.png"]
+# image=[r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame.png"]
 prompt= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt.txt"# prompt 1 refers to the list of components
 prompt_2= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt_2.txt"#  for the grid
 prompt_3= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt_3.txt"# for the final json
 placement=r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\Placement.txt"
-image_response=r"C:\Users\menim\OneDrive\Εικόνες\Στιγμιότυπα οθόνης\Screenshot 2025-10-09 103255.png"
+wrong=r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\wrong.txt"
+image_response=r"C:\Users\menim\OneDrive\Εικόνες\Στιγμιότυπα οθόνης\Screenshot 2025-12-12 190556.png"
 
 class LLMChatHandler:
     def __init__(self,model):
-        self.url = os.environ.get("url")
-        self.access_token = os.environ.get("access_token")
+        self.url = os.environ.get("BASE_URL")
+        self.access_token = os.environ.get("TOKEN")
         self.messages = []
 
     def _build_content_parts(self, message):
@@ -48,12 +52,25 @@ class LLMChatHandler:
         # Handle JSON file content
         if "file_content_path" in message:
             try:
-                with open(message["file_content_path"], "r", encoding="utf-8") as f:
-                    json_data = json.load(f)
+                value = message["file_content_path"]
+
+                if isinstance(value, str) and value.strip().startswith("{"):
+                    # είναι JSON string
+                    json_data = json.loads(value)
+                else:
+                    # είναι path
+                    with open(value, "r", encoding="utf-8") as f:
+                        json_data = json.load(f)
+
                 json_string = json.dumps(json_data, indent=2, ensure_ascii=False)
-                content_parts.append({"type": "text", "text": f"```json\n{json_string}\n```"})
+                content_parts.append({
+                    "type": "text",
+                    "text": f"```json\n{json_string}\n```"
+                })
+
             except Exception as e:
                 print(f"Error reading JSON file: {e}")
+
         
         if "text_content_path" in message:
             try:
@@ -73,29 +90,46 @@ class LLMChatHandler:
         if not content:
             raise ValueError("Message must contain at least text, JSON, image or text_content_path")
 
-        # Προσθήκη μηνύματος στο context
+        # Add user message
         self.messages.append({"role": role, "content": content})
 
-        # Κλήση στο API
-        headers = {
-            "access_token": self.access_token,
-            "Content-Type": "application/json"
-        }
-        body = {"messages": self.messages,"max_tokens":4096}
-
-        response = requests.post(self.url, headers=headers, json=body)
+        # Send request
+        response = requests.post(
+            f"{self.url}/v1/messages",
+            headers={"Authorization": f"Bearer {self.access_token}"},
+            json={
+                "messages": self.messages,
+                "provider": "gcp",
+                "model": "claude-sonnet-4-5@20250929",
+                "tools": [],
+                "system": "Override system prompt",
+                "temperature": 0.7,
+                "max_tokens": 4096
+            }
+        )
 
         if response.status_code != 200:
             raise RuntimeError(f"Error from LLM API: {response.status_code} - {response.text}")
 
-        assistant_reply = response.json()
-        self.messages.append({"role": "assistant", "content": assistant_reply})
-        return assistant_reply
+        # Parse JSON
+        response_json = response.json()
+
+        # Extract assistant message content
+        assistant_content = response_json.get("content")
+
+        # Append assistant message (correct)
+        self.messages.append({
+            "role": "assistant",
+            "content": assistant_content
+        })
+
+        return response_json
+
 
 
 # DIALOG
 chat_handler = LLMChatHandler('claude')
-
+frames = []
 # response = chat_handler.send_message({"role":"user",
 #     "message":"In the following picture in your last response you mistook the bottom left input for a button and the bottom right button for an input. This is a big mistake and you should never do this again. When the rectangle has a line inside then it is button, if not then it is a input thats it.  What it is that confused you?",
 #     "image": {
@@ -110,15 +144,109 @@ chat_handler = LLMChatHandler('claude')
 #      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
 #          }})
 # print(response)
-response = chat_handler.send_message({"role":"user",
-    "text_content_path": prompt_3,
-    "file_content_path":json_code,
+###############
+####Simple Wireframe####
+# response = chat_handler.send_message({"role":"user",
+#     "text_content_path": prompt_3,
+#     "file_content_path":json_code,
+#     "image": {
+#      "path": image, # Use raw string for paths
+#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+#          }})
+# print(response)
+#################
+####Scroll####
+
+# for i in range(len(image)):
+    # response=chat_handler.send_message({"role":"user",
+    # "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
+    # "image": {
+    #  "path": image[i], # Use raw string for paths
+    #  "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+    #      }})
+    
+    # reply = response['content'][0]['text']
+    # print(f"\n {reply}")
+    # response = chat_handler.send_message({"role":"user",
+    # # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
+    # "text_content_path": prompt,
+    # "file_content_path":json_code,
+    # "image": {
+    #  "path": image[i], # Use raw string for paths
+    #  "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+    #      }})
+    # wireframe = response['content'][0]['text']
+    # print(f"\n{wireframe}")
+    # wireframes.append(wireframe)
+########################################
+############ With JSON CODE ############
+# with open(json_code, "r", encoding="utf-8") as f:
+#     data = json.load(f)
+
+# wireframes = data["document"]["children"][0]["children"]
+
+# for i, wireframe in enumerate(wireframes, start=0):
+#     wireframe_str = json.dumps(
+#         wireframe,
+#         ensure_ascii=False,
+#         indent=2
+#     )
+#     response=chat_handler.send_message({"role":"user",
+#     "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
+#     "image": {
+#      "path": image[i], # Use raw string for paths
+#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+#          }})
+    
+#     reply = response['content'][0]['text']
+#     print(f"\n {reply}")
+#     response = chat_handler.send_message({"role":"user",
+#     # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
+#     "text_content_path": prompt_2,
+#     # "file_content_path":wireframe_str,
+#     "image": {
+#      "path": image[i], # Use raw string for paths
+#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+#          }})
+#     frame = response['content'][0]['text']
+#     print(f"\n{frame}")
+#     frames.append(frame)
+##############################################
+############ WITHOUT JSON CODE ###############
+for i in range(len(image)):
+    
+    response=chat_handler.send_message({"role":"user",
+    "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
     "image": {
-     "path": image, # Use raw string for paths
+     "path": image[i], # Use raw string for paths
      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
          }})
-print(response)
-
+    
+    reply = response['content'][0]['text']
+    print(f"\n {reply}")
+    response = chat_handler.send_message({"role":"user",
+    # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
+    "text_content_path": prompt_2,
+    # "file_content_path":wireframe_str,
+    "image": {
+     "path": image[i], # Use raw string for paths
+     "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+         }})
+    frame = response['content'][0]['text']
+    print(f"\n{frame}")
+    frames.append(frame)
+# response=chat_handler.send_message({"role":"user",
+#     "message":"I gave you this image, the rules you must follow and the  json code and you change the absolut bounding box for Wireframe 1.The first text file contains the json code from figma for the wireframe and the second text contains youre response json code. What confused you and shrunk the first wireframe and where did you get those values (\"x\": 867),because you use this one each time and this specific value does not apear in the json code not even once? The whole wireframe is smaller and especially the inputs. Tell me how can i help you because youve been doing the same mistake over and over again ",
+#     "text_content_path":prompt,
+#     "file_content_path":json_code,
+#     "text_content_path":wrong,
+#     "image": {
+#      "path": image[0], # Use raw string for paths
+#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+#         }})
+# reply = response['content'][0]['text']
+# print(f"\n {reply}")
+##############
 # response = chat_handler.send_message({"role":"user",
 #     "text_content_path": placement,
 #     "message":json_1,
@@ -126,153 +254,74 @@ print(response)
 #      "path": image, # Use raw string for paths
 #      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
 #          }})
-# response = chat_handler.send_message({"role":"user",
-#     "message": "I gave yout this wireframe:",
-#     "image": {
-#      "path": image, # Use raw string for paths
-#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
-#          },
-#     "message":"and the wireframe from your response was the following image as you can see it is not quite right because  as you can see in the given wireframe the 3rd image is squere but in your result it is a rectangle",
-#     "image": {
-#      "path": image_response, # Use raw string for paths
-#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
-#          }})
 
-
-claude_components = [] # Initialize to an empty list to prevent NameError
-
-json_string_to_parse = response.strip() # Use the dedicated variable for JSON response
-
-# Clean the LLM response by stripping Markdown code block fences
-if json_string_to_parse.startswith('```json') and json_string_to_parse.endswith('```'):
-    json_string_to_parse = json_string_to_parse.removeprefix('```json\n').removesuffix('\n```')
-
-try:
-    # Now parse the cleaned string
-    claude_components = json.loads(json_string_to_parse)
-except json.JSONDecodeError as e:
-    print(f"Error decoding JSON response from LLM: {e}")
-    print(f"Problematic JSON content: '{json_string_to_parse}'")
-
-def render_component (component_data):
-    if component_data.get("type")=="Image":
-        return f"<Box style={{{{border: \"2px dashed grey\",display: \"flex\",color: \"grey\"}}}} className=\"{component_data.get('name')}\" >{component_data.get('name')}</Box>"
-    elif component_data.get("type")=="Text":
-        return f"<div className=\"{component_data.get('name')}\" >{component_data.get('name')}</div>"
-    elif component_data.get("type")=="Button":
-        return  f"<PrimaryBackgroundButton className=\"{component_data.get('name')}\" />"
-    elif component_data.get("type") == "Input":
-        if component_data.get("label") is None:
-            return f"<Input className=\"{component_data.get('name')}\" id=\"{component_data.get('name')}\" />"
-        else:
-            return f"<Input className=\"{component_data.get('name')}\" id=\"{component_data.get('name')}\" label=\"{component_data.get('label')}\"/>"
-    elif component_data.get("type") == "Dropdown":
-        return f"<PrimaryBackgroundDropdown className=\"{component_data.get('name')}\" placeholder=\"{component_data.get('name')}\"  items={{{component_data.get('items')}}} value={{dropdownValue}} onChange={{handleDropdown}}/>"
-    elif component_data.get("type") == "Checkbox":
-        return f"<Checkbox className=\"{component_data.get('name')}\" checked={{isChecked}}  onChange={{handleCheckbox}}/>"
-    elif component_data.get("type") == "Card":
-        if component_data.get("children") is None:
-            return f"<Card className=\"{component_data.get('name')}\" title==\"{component_data.get('name')}\"/>"
-        else :
-            children_list=[]
-            for child in component_data.get("children"):
-                children=render_component(child)
-                children_list.append(children)
-            children_final="\n".join(children_list)
-            return  f"""<Card className=\"{component_data.get('name')}\" title=\"{component_data.get('name')}\" >
-        {children_final}
-      </Card>"""
-    elif component_data.get("type") == "Switch":
-        return f"<Switch className=\"{component_data.get('name')}\" checked={{isChecked}} onChange={{handleSwitch}}/>"
-    elif component_data.get("type") == "Table":
-        return f"<Table className=\"{component_data.get('name')}\" columns=\"{component_data.get('columns')}\" data={{{component_data.get('data')}}}/>"
-    return
-
-def map_x_to_column(x,fr):
-    z = x / fr
-    if z == 0:
-        return 1
-    else:
-        return (z + 1) // 2 + 1
-
-def map_y_to_row(y,fr):
-    z = y / fr
-    if z == 0:
-        return 1
-    else:
-        return (z + 1) // 2 + 1
-    
-def render_grid_placement (component_data,Parent):
-    bbox = component_data.get("absoluteBoundingBox")
-    x = bbox.get("x")
-    y = bbox.get("y")
-    width = bbox.get("width")
-    height = bbox.get("height")
-    if Parent==None:
-        start_column = map_x_to_column(x,80)
-        end_column = map_x_to_column(x+width,80)
-        if start_column==end_column:
-            end_column=end_column+1
-
-        start_row = map_y_to_row(y,24)
-        end_row = map_y_to_row(y+height,24)
-        if start_row==end_row:
-            end_row=end_row+1
-            # start_row = y
-        # end_row = y + height
-    else:
-        start_column = map_x_to_column(x-Parent[0],Parent[2]/24)
-        end_column = map_x_to_column(x-Parent[0]+width,Parent[2]/24)
-        if start_column==end_column:
-            end_column=end_column+1
-
-        start_row = map_y_to_row(y-Parent[1]-44,(Parent[3]-44)/20)
-        end_row = map_y_to_row(y-Parent[1]+height-44,(Parent[3]-44)/20)
-        if start_row==end_row:
-            end_row=end_row+1
-    component_css_name = component_data.get("name").strip('"')
-    css_list = []
-    css_list.append(f'grid-column:{int(start_column)}/{int(end_column)};')
-    css_list.append(f'grid-row:{int(start_row)}/{int(end_row)};') 
-    css_string = "\n".join(css_list)
-    if component_data.get("children") is None:
-        return f".{component_css_name} {{ \n{css_string} }}"  
-    else :
-        children_list=[]
-        for child in component_data.get("children"):
-            children_placement=render_grid_placement(child,[x,y,width,height])
-            children_list.append(children_placement)
-        children_final_placement="\n".join(children_list)
-        return f"""
-.{component_css_name} {{ \n{css_string} }}
-.{component_css_name}_Grid{{
-display: grid;
-grid-template-columns: repeat(13, 1fr);
-grid-template-rows: repeat(10, minmax(0, 1fr));
-width: 100%;
-height: 100%;
-min-height: 0;
-}}
-{children_final_placement}"""
-
-print("\n--- Generated JSX Components ---")
 generated_jsx_blocks = []
 generated_css_blocks = []
+claude_components = [] 
+all_components =[]
+all_final_grid_strings = [] 
+generated_css_blocks = [] 
+column_list = []
 
-    # Iterate and render components if claude_components is not empty
-if claude_components: # Check if the list has elements
-    for comp in claude_components:
-        jsx = render_component(comp)
-        css = render_grid_placement(comp,None)
-        generated_jsx_blocks.append(jsx)
-        generated_css_blocks.append(css)
-else:
-    print("No components to render, possibly due to LLM not returning valid JSON or an empty list.")
+for frame in frames:
+    current_jsx_blocks = []
     
-# Always define final_output_jsx, even if generated_jsx_blocks is empty
-final_output_jsx = "\n\n".join(generated_jsx_blocks)
+    json_string_to_parse = frame.strip()
+    
+    if json_string_to_parse.startswith('```json') and json_string_to_parse.endswith('```'):
+        json_string_to_parse = json_string_to_parse.removeprefix('```json\n').removesuffix('\n```')
+
+    try:
+        claude_components = json.loads(json_string_to_parse)
+        
+        if claude_components:
+            for comp in claude_components:
+                # 1. Παραγωγή και συλλογή JSX/CSS
+                jsx = render_component(comp)
+                css = render_grid_placement(comp, None)
+                if comp.get("columns") is not None:
+                    columns = ["""{
+			Header: <Typography id="name_header" variant="h6">{"Name"}</Typography>,
+			accessor: "column_i",
+			id: "column_i",
+			filterable: true,
+			minWidth: 200,
+			sortMethod: (value1, value2) => stringAToZInsensitive()(value1, value2),
+			filterMethod: ({ id, value }, row) => isFuzzyMatch(row[id], value),
+			Cell: ({ value }) => (
+				<Box sx={{ display: "flex", ml: 1, alignItems: "center" }}>
+					{value}
+				</Box>
+			)}""" for _ in range(comp.get("columns"))]
+                    column_list.append(columns)
+            
+                current_jsx_blocks.append(jsx) 
+                generated_css_blocks.append(css)
+                
+            
+            final_jsx = "\n\n".join(current_jsx_blocks)
+            
+            output_jsx_string = f"""
+<Grid className="Grid">
+    {final_jsx}
+</Grid>
+"""
+            all_final_grid_strings.append(output_jsx_string)
+
+        else:
+            print("No components to render, possibly due to LLM not returning valid JSON or an empty list.")
+            
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON response from LLM: {e}")
+        print(f"Problematic JSON content: '{json_string_to_parse}'")
+
+    
+final_output_jsx = "\n\n".join(all_final_grid_strings)
 final_output_css = "\n\n".join(generated_css_blocks)
+final_columns = f" const = {column_list}" if column_list else ""
+print("--- Final JSX Output ---")
 print(final_output_jsx)
+print("--- Final CSS Output ---")
 print(final_output_css)
 
 
@@ -288,14 +337,15 @@ import_statements = [
         "import Switch from './components/Switch.jsx';",
         "import Table from './components/Table.jsx'",
         "import Grid from '@mui/material/Grid';",
-        "import Box from '@mui/material/Box'"
+        "import Box from '@mui/material/Box'",
+        "import { Typography } from '@mui/material'"
     ]
 import_grid = [
   ".Grid {\n"
   "display: grid;\n"
-  f"grid-template-columns: repeat(12, 1fr);\n"
-  "grid-auto-rows: 25px; \n"
-  "gap: 0rem;\n"
+  "grid-template-columns: repeat(12, 1fr);\n"
+  "grid-auto-rows: repeat(15, 1fr); \n"
+  "gap: 0.5rem;\n"
   "width: 100vw;\n" 
   "height: 100vh;\n"
   "}\n\n"
@@ -311,6 +361,7 @@ react_component_template = f"""
 {  "\n".join(import_statements)}
 import './App.css'
 function App() {{
+  const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked]=useState(false);
   const handleCheckbox = (event) => {{
   setIsChecked(event.target.checked);
@@ -322,10 +373,11 @@ function App() {{
   const handleDropdown = (event) => {{
     setDropdownValue(event.target.value);
   }};
+  {final_columns}
   return (
-    <Grid columns="12" className="Grid">
-      {final_output_jsx.replace('\\n', '\\n\\t')}
-    </Grid>
+    <div>
+        {final_output_jsx}
+    </div>
   );
 }}
 
@@ -345,15 +397,15 @@ print(f"Generated CSS saved to: {output_css_file_path}")
 print("\n--- End of Generated JSX Output ---")
 print("\nRemember to add import statements in your actual JSX file.")
 #############
-# import subprocess
+import subprocess
 
-# try:
-#     # Τρέχει την εντολή npm run dev
-#     process = subprocess.Popen(["npm", "run", "dev"], cwd="./my-react-app", shell=True)
-#     print("Ο server σηκώθηκε ...")
-#     process.communicate()
-# except Exception as e:
-#     print(f"Παρουσιάστηκε σφάλμα: {e}")
+try:
+    # Τρέχει την εντολή npm run dev
+    process = subprocess.Popen(["npm", "run", "dev"], cwd="./my-react-app", shell=True)
+    print("Ο server σηκώθηκε ...")
+    process.communicate()
+except Exception as e:
+    print(f"Παρουσιάστηκε σφάλμα: {e}")
 
 ##############
 

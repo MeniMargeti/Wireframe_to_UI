@@ -1,0 +1,17 @@
+{
+    "title": "Womens shoes",
+    "description": "It is a website with shoes for women",
+    "primary_color": "#B22222",
+    "screens": [
+        {
+            "image": "C:\\Users\\menim\\OneDrive\\Έγγραφα\\Διπλωματική\\project\\shoes\\Wireframe - 1.png",
+            "description": "The shoe display with its desciption, size to choose and add to card button",
+            "slug": "/shoe"
+        },
+        {
+            "image": "C:\\Users\\menim\\OneDrive\\Έγγραφα\\Διπλωματική\\project\\shoes\\Wireframe - 2.png",
+            "description": "The size chart and the return policy",
+            "slug": "/shoe"
+        }
+    ]
+}
