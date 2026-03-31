@@ -5,19 +5,11 @@ import requests
 from dotenv import load_dotenv
 load_dotenv('codes.env')
 from UI_code import render_component, render_grid_placement
-# image=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\wireframe_6\Frame.png"
-# json_code=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\wireframe_6\wireframe.json"
-# json_code=r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\wireframe.json"
-image=[r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_1.png",
-       r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_2.png",
-       r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_3.png"]
-# image=[r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame.png"]
-prompt= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt.txt"# prompt 1 refers to the list of components
-prompt_2= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt_2.txt"#  for the grid
-prompt_3= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt_3.txt"# for the final json
-placement=r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\Placement.txt"
-wrong=r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\wrong.txt"
-image_response=r"C:\Users\menim\OneDrive\Εικόνες\Στιγμιότυπα οθόνης\Screenshot 2025-12-12 190556.png"
+
+#image=[r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_1.png",
+#       r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_2.png",
+#       r"C:\Users\menim\OneDrive\Έγγραφα\Διπλωματική\all\Frame_3.png"]
+prompt= r"C:\Users\menim\OneDrive\Υπολογιστής\LLM_wrapper (1)\prompt.txt"
 
 class LLMChatHandler:
     def __init__(self,model):
