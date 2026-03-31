@@ -56,8 +56,15 @@ route_files = defaultdict(lambda: {
 def set_primary_color(path, new_color):
     with open(path, "r", encoding="utf-8") as f:
         content = f.read()
+
+    # Searches for the 'primary': followed by the HEX color
+    pattern = r"('primary':\s*)(#[0-9a-fA-F]+)"
+    
+    # Replacing the Hex color keeping the first part ('primary': )
+    new_content = re.sub(pattern, f"\\1{new_color}", content)
+
     with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
+        f.write(new_content)
 
 set_primary_color("C:\\Users\\menim\\OneDrive\\Υπολογιστής\\LLM_wrapper (1)\\my-react-app\\src\\colors.module.scss", project_json["primary_color"])
 class LLMChatHandler:
@@ -96,10 +103,10 @@ class LLMChatHandler:
                 value = message["file_content_path"]
 
                 if isinstance(value, str) and value.strip().startswith("{"):
-                    # είναι JSON string
+                    #  JSON string
                     json_data = json.loads(value)
                 else:
-                    # είναι path
+                    #  path
                     with open(value, "r", encoding="utf-8") as f:
                         json_data = json.load(f)
 
@@ -111,9 +118,6 @@ class LLMChatHandler:
 
             except Exception as e:
                 print(f"Error reading JSON file: {e}")
-
-        
-        
 
         return content_parts
     
@@ -215,7 +219,7 @@ for i, screen in enumerate(screens, start=0):
         table_imports=""
         if components:
             for comp in components:
-                # 1. Παραγωγή και συλλογή JSX/CSS
+                # 1. Production of JSX/CSS
                 jsx = render_component(comp)
                 css = render_grid_placement(comp, None)
                 
@@ -276,17 +280,30 @@ for slug, content in route_files.items():
 import './{file_name}.css'
 {final_table_imports}
 function {file_name.capitalize()}() {{
-  const [isLoading, setIsLoading] = useState(false);
-  const [isChecked, setIsChecked]=useState(false);
-  const handleCheckbox = (event) => {{
-  setIsChecked(event.target.checked);
-  }};
-  const handleSwitch = (event) => {{
-  setIsChecked(event.target.checked);
-  }};
-  const [dropdownValue, setDropdownValue] = useState(''); 
-  const handleDropdown = (event) => {{
-    setDropdownValue(event.target.value);
+const [isLoading, setIsLoading] = useState(false);
+const [switches, setSwitches] = useState({{}});
+const [checkboxes, setCheckboxes] = useState({{}});
+const [dropdownValue, setDropdownValue] = useState({{}});
+
+const handleCheckbox = (className) => (event) => {{
+  setCheckboxes(prev => ({{
+    ...prev,
+    [className]: event.target.checked
+  }}));
+}};
+
+const handleSwitch = (className) => (event) => {{
+  setSwitches(prev => ({{
+    ...prev,
+    [className]: event.target.checked
+  }}));
+}};
+  const handleDropdown = (id) => (event) => {{
+    const newValue = event.target.value;
+    setDropdownValue(prevValues => ({{
+      ...prevValues, // κρατάμε τις τιμές των άλλων dropdowns
+      [id]: newValue  // ενημερώνουμε μόνο αυτό που άλλαξε
+    }}));
   }};
   return (
     <div>
@@ -352,13 +369,8 @@ with open(app_jsx_path, "w", encoding="utf-8") as f:
 import subprocess
 
 try:
-    # Τρέχει την εντολή npm run dev
     process = subprocess.Popen(["npm", "run", "dev"], cwd="./my-react-app", shell=True)
     print("Ο server σηκώθηκε ...")
     process.communicate()
 except Exception as e:
     print(f"Παρουσιάστηκε σφάλμα: {e}")
-########################################
-########################################
-########################################
-########################################
