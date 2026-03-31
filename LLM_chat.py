@@ -149,27 +149,27 @@ frames = []
 #################
 ####Scroll####
 
-# for i in range(len(image)):
-    # response=chat_handler.send_message({"role":"user",
-    # "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
-    # "image": {
-    #  "path": image[i], # Use raw string for paths
-    #  "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
-    #      }})
+for i in range(len(image)):
+    response=chat_handler.send_message({"role":"user",
+    "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
+    "image": {
+     "path": image[i], # Use raw string for paths
+     "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+         }})
     
-    # reply = response['content'][0]['text']
-    # print(f"\n {reply}")
-    # response = chat_handler.send_message({"role":"user",
-    # # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
-    # "text_content_path": prompt,
-    # "file_content_path":json_code,
-    # "image": {
-    #  "path": image[i], # Use raw string for paths
-    #  "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
-    #      }})
-    # wireframe = response['content'][0]['text']
-    # print(f"\n{wireframe}")
-    # wireframes.append(wireframe)
+    reply = response['content'][0]['text']
+    print(f"\n {reply}")
+    response = chat_handler.send_message({"role":"user",
+    # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
+    "text_content_path": prompt,
+    "file_content_path":json_code,
+    "image": {
+     "path": image[i], # Use raw string for paths
+     "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+         }})
+    wireframe = response['content'][0]['text']
+    print(f"\n{wireframe}")
+    wireframes.append(wireframe)
 ########################################
 ############ With JSON CODE ############
 # with open(json_code, "r", encoding="utf-8") as f:
@@ -204,29 +204,29 @@ frames = []
 #     print(f"\n{frame}")
 #     frames.append(frame)
 ##############################################
-############ WITHOUT JSON CODE ###############
-for i in range(len(image)):
+# ############ WITHOUT JSON CODE ###############
+# for i in range(len(image)):
     
-    response=chat_handler.send_message({"role":"user",
-    "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
-    "image": {
-     "path": image[i], # Use raw string for paths
-     "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
-         }})
+#     response=chat_handler.send_message({"role":"user",
+#     "message":"I pass you this image and I want you to describe what do you see in the image. The shapes what they contain, if there is a margin in the edges of the wireframe etc. ",
+#     "image": {
+#      "path": image[i], # Use raw string for paths
+#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+#          }})
     
-    reply = response['content'][0]['text']
-    print(f"\n {reply}")
-    response = chat_handler.send_message({"role":"user",
-    # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
-    "text_content_path": prompt_2,
-    # "file_content_path":wireframe_str,
-    "image": {
-     "path": image[i], # Use raw string for paths
-     "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
-         }})
-    frame = response['content'][0]['text']
-    print(f"\n{frame}")
-    frames.append(frame)
+#     reply = response['content'][0]['text']
+#     print(f"\n {reply}")
+#     response = chat_handler.send_message({"role":"user",
+#     # "message":"I passed you this image and json and your response was that the top components are test, which is obviously wrong because in the top wireframe apear 4 rectangles with lines inside ",
+#     "text_content_path": prompt_2,
+#     # "file_content_path":wireframe_str,
+#     "image": {
+#      "path": image[i], # Use raw string for paths
+#      "media_type": "image/png" # Or "image/jpeg" if it's a JPEG
+#          }})
+#     frame = response['content'][0]['text']
+#     print(f"\n{frame}")
+#     frames.append(frame)
 # response=chat_handler.send_message({"role":"user",
 #     "message":"I gave you this image, the rules you must follow and the  json code and you change the absolut bounding box for Wireframe 1.The first text file contains the json code from figma for the wireframe and the second text contains youre response json code. What confused you and shrunk the first wireframe and where did you get those values (\"x\": 867),because you use this one each time and this specific value does not apear in the json code not even once? The whole wireframe is smaller and especially the inputs. Tell me how can i help you because youve been doing the same mistake over and over again ",
 #     "text_content_path":prompt,
